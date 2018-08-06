@@ -1,0 +1,32 @@
+# Eclipse
+.classpath
+.project
+.settings/
+
+# Intellij
+.idea/
+*.iml
+*.iws
+
+# Mac
+.DS_Store
+
+# Maven
+log/
+target/
+
+*.*~
+
+#LQNS
+*.out
+*.lqxo
+
+/test-output.lqnx
+/input.ps
+/test-output.ps
+/test-output.lqxo
+/intermediateInputFile.lqnx
+.gitignore
+intermediateInputFile.lqnx
+output.ps
+/output.ps
