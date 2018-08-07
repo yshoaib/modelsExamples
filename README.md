@@ -4,7 +4,7 @@ Examples of using [models](https://github.com/yshoaib/application-cloud-model) l
 
 Prerequisites
 ==============
-LQN Solver (LQNS)nneeds to be installed on the system.
+LQN Solver (LQNS) needs to be installed on the system.
 
 Related projects
 ===========
