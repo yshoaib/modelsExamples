@@ -4,7 +4,6 @@ import ca.appsimulations.jlqninterface.lqn.model.LqnModel;
 import ca.appsimulations.jlqninterface.lqn.model.LqnXmlDetails;
 import ca.appsimulations.jlqninterface.lqn.model.SolverParams;
 import ca.appsimulations.jlqninterface.lqn.model.handler.LqnSolver;
-import ca.appsimulations.jlqninterface.lqn.model.parser.LqnInputParser;
 import ca.appsimulations.jlqninterface.lqn.model.parser.LqnResultParser;
 import ca.appsimulations.jlqninterface.lqn.model.writer.LqnModelWriter;
 import ca.appsimulations.models.model.application.App;
@@ -17,12 +16,15 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.File;
 import java.util.List;
 
-import static ca.appsimulations.models.model.cloud.ContainerType.*;
+import static ca.appsimulations.models.model.cloud.ContainerType.LA;
+import static ca.appsimulations.models.model.cloud.ContainerType.MD;
+import static ca.appsimulations.models.model.cloud.ContainerType.SM;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 
 @Slf4j
-public class SimpleExample {
+public class ReplicationExample {
+
     private static final double CONVERGENCE = 0.01;
     private static final int ITERATION_LIMIT = 50_000;
     private static final double UNDER_RELAX_COEFF = 0.9;
@@ -137,8 +139,11 @@ public class SimpleExample {
                 .build();
 
         cloud.instantiateContainer("pClient", "Browser", SM);
-        cloud.instantiateContainer("pTaskA", "TaskA", SM);
+        cloud.instantiateContainer("TaskA", SM, 2);
+        cloud.instantiateContainer("TaskA", MD, 2);
+        cloud.instantiateContainer("TaskA", LA);
         cloud.instantiateContainer("pTaskB", "TaskB", SM);
+        cloud.instantiateContainer("pTaskB_1", "TaskB", MD);
         cloud.instantiateContainer("pTaskC", "TaskC", SM);
         cloud.instantiateContainer("pTaskD", "TaskD", SM);
         return cloud;
@@ -166,7 +171,7 @@ public class SimpleExample {
     }
 
 
-    public static double getResponseTime( LqnModel lqnModelResult, String entryName) {
+    public static double getResponseTime(LqnModel lqnModelResult, String entryName) {
         String activityName = lqnModelResult.entryByName(entryName).getEntryPhaseActivities().getActivityAtPhase(1)
                 .getName();
         List<ActivityDefBase> activities =
