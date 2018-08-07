@@ -26,7 +26,7 @@ target/
 /test-output.ps
 /test-output.lqxo
 /intermediateInputFile.lqnx
-.gitignore
 intermediateInputFile.lqnx
 output.ps
 /output.ps
+/input.lqnx
