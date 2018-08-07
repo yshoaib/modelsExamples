@@ -8,5 +8,5 @@ LQN Solver (LQNS)nneeds to be installed on the system.
 
 Related projects
 ===========
-https://github.com/yshoaib/application-cloud-model
-https://github.com/yshoaib/jLQNInterface
+* https://github.com/yshoaib/application-cloud-model
+* https://github.com/yshoaib/jLQNInterface
