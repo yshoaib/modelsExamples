@@ -1,6 +1,5 @@
 package ca.appsimulations.models.examples.ucc2012;
 
-
 import ca.appsimulations.jlqninterface.lqn.model.LqnModel;
 import ca.appsimulations.jlqninterface.lqn.model.LqnXmlDetails;
 import ca.appsimulations.jlqninterface.lqn.model.SolverParams;
@@ -11,6 +10,7 @@ import ca.appsimulations.models.model.application.App;
 import ca.appsimulations.models.model.application.AppBuilder;
 import ca.appsimulations.models.model.cloud.Cloud;
 import ca.appsimulations.models.model.cloud.CloudBuilder;
+import ca.appsimulations.models.model.cloud.ContainerType;
 import ca.appsimulations.models.model.lqnmodel.LqnModelFactory;
 import lombok.extern.slf4j.Slf4j;
 
@@ -19,12 +19,13 @@ import java.io.File;
 import static ca.appsimulations.models.examples.common.ResponseTime.getResponseTime;
 import static ca.appsimulations.models.examples.common.SolverCommonParams.buildLqnXmlDetails;
 import static ca.appsimulations.models.examples.common.SolverCommonParams.buildSolverParams;
-import static ca.appsimulations.models.model.cloud.ContainerType.*;
+import static ca.appsimulations.models.model.cloud.ContainerType.LA;
+import static ca.appsimulations.models.model.cloud.ContainerType.MD;
+import static ca.appsimulations.models.model.cloud.ContainerType.SM;
 import static java.util.Arrays.asList;
 
-// Model used in "Using Layered Bottlenecks for Virtual Machine Provisioning in the Clouds"
 @Slf4j
-public class ucc2012 {
+public class LayeredBottleneckResultUcc2012 {
 
     public static void main(String[] args) throws Exception {
 
@@ -103,9 +104,15 @@ public class ucc2012 {
     }
 
     private static Cloud buildCloud(App app) {
+        ContainerType large = new ContainerType("large",
+                                                6,
+                                                2.5,
+                                                15);
+
+
         Cloud cloud = CloudBuilder.builder()
                 .name("cloud1")
-                .containerTypes(asList(SM, MD, LA))
+                .containerTypes(asList(SM, MD, large))
                 .containerImage("Browser")
                 .service("Browser", app)
                 .buildContainerImage()
@@ -124,10 +131,10 @@ public class ucc2012 {
                 .build();
 
         cloud.instantiateContainer("pClient", "Browser", SM);
-        cloud.instantiateContainer("pTaskA", "TaskA", SM);
-        cloud.instantiateContainer("pTaskB", "TaskB", SM);
-        cloud.instantiateContainer("pTaskC", "TaskC", SM);
-        cloud.instantiateContainer("pTaskD", "TaskD", SM);
+        cloud.instantiateContainer("TaskA", SM, 2);
+        cloud.instantiateContainer("TaskB", MD, 2);
+        cloud.instantiateContainer("TaskC", large, 2);
+        cloud.instantiateContainer("pTaskD", "TaskD", large);
         return cloud;
     }
 }
