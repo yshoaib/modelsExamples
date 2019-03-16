@@ -1,9 +1,12 @@
+package ca.appsimulations.models.examples;
+
 import ca.appsimulations.jlqninterface.lqn.entities.ActivityDefBase;
 import ca.appsimulations.jlqninterface.lqn.entities.ActivityPhases;
 import ca.appsimulations.jlqninterface.lqn.model.LqnModel;
 import ca.appsimulations.jlqninterface.lqn.model.LqnXmlDetails;
 import ca.appsimulations.jlqninterface.lqn.model.SolverParams;
 import ca.appsimulations.jlqninterface.lqn.model.handler.LqnSolver;
+import ca.appsimulations.jlqninterface.lqn.model.parser.LqnInputParser;
 import ca.appsimulations.jlqninterface.lqn.model.parser.LqnResultParser;
 import ca.appsimulations.jlqninterface.lqn.model.writer.LqnModelWriter;
 import ca.appsimulations.models.model.application.App;
@@ -16,15 +19,13 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.File;
 import java.util.List;
 
-import static ca.appsimulations.models.model.cloud.ContainerType.LA;
-import static ca.appsimulations.models.model.cloud.ContainerType.MD;
-import static ca.appsimulations.models.model.cloud.ContainerType.SM;
+import static ca.appsimulations.models.examples.common.ResponseTime.getResponseTime;
+import static ca.appsimulations.models.model.cloud.ContainerType.*;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 
 @Slf4j
-public class ReplicationExample {
-
+public class SimpleExample {
     private static final double CONVERGENCE = 0.01;
     private static final int ITERATION_LIMIT = 50_000;
     private static final double UNDER_RELAX_COEFF = 0.9;
@@ -88,7 +89,7 @@ public class ReplicationExample {
         }while(i <= 11);
     }
 
-    public static App buildApp(String appName, int users, int maxReplicas, double responseTimeObjective){
+    private static App buildApp(String appName, int users, int maxReplicas, double responseTimeObjective){
         App app = AppBuilder.builder()
                 .name(appName)
                 .maxReplicas(maxReplicas)
@@ -117,7 +118,7 @@ public class ReplicationExample {
         return app;
     }
 
-    public static Cloud buildCloud(App app){
+    private static Cloud buildCloud(App app){
         Cloud cloud = CloudBuilder.builder()
                 .name("cloud1")
                 .containerTypes(asList(SM, MD, LA))
@@ -139,11 +140,8 @@ public class ReplicationExample {
                 .build();
 
         cloud.instantiateContainer("pClient", "Browser", SM);
-        cloud.instantiateContainer("TaskA", SM, 2);
-        cloud.instantiateContainer("TaskA", MD, 2);
-        cloud.instantiateContainer("TaskA", LA);
+        cloud.instantiateContainer("pTaskA", "TaskA", SM);
         cloud.instantiateContainer("pTaskB", "TaskB", SM);
-        cloud.instantiateContainer("pTaskB_1", "TaskB", MD);
         cloud.instantiateContainer("pTaskC", "TaskC", SM);
         cloud.instantiateContainer("pTaskD", "TaskD", SM);
         return cloud;
@@ -168,22 +166,5 @@ public class ReplicationExample {
                 .description(XML_DESCRIPTION)
                 .schemaLocation(SCHEMA_LOCATION)
                 .build();
-    }
-
-
-    public static double getResponseTime(LqnModel lqnModelResult, String entryName) {
-        String activityName = lqnModelResult.entryByName(entryName).getEntryPhaseActivities().getActivityAtPhase(1)
-                .getName();
-        List<ActivityDefBase> activities =
-                lqnModelResult.activities().stream().filter(activityDefBase -> activityDefBase.getName().equals
-                        (activityName)).collect(
-                        toList());
-
-        double responseTime = 0;
-        if (activities.size() > 0) {
-            ActivityPhases ap = (ActivityPhases) activities.get(0);
-            responseTime = ap.getResult().getService_time();
-        }
-        return responseTime;
     }
 }

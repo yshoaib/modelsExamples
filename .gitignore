@@ -28,5 +28,5 @@ target/
 /intermediateInputFile.lqnx
 intermediateInputFile.lqnx
 output.ps
-/output.ps
 /input.lqnx
+*.ps
