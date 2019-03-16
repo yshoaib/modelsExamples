@@ -28,21 +28,8 @@ import static ca.appsimulations.models.examples.common.ResponseTime.getResponseT
 
 @Slf4j
 public class ModifiedEntcsExample {
-
-    private static final double CONVERGENCE = 0.01;
-    private static final int ITERATION_LIMIT = 50_000;
-    private static final double UNDER_RELAX_COEFF = 0.9;
-    private static final int PRINT_INTERVAL = 1;
-    private static final String XML_NS_URL = "http://www.w3.org/2001/XMLSchema-instance";
-    private static final String SCHEMA_LOCATION = "lqn.xsd";
-    private static final String XML_NAME = "input-rep";
-    private static final String XML_DESCRIPTION = "input-rep.lqn";
-    private static final String COMMENT = "Test System";
-
     public static void main(String[] args) throws Exception {
         File inputFile = new File("input.lqnx");
-
-
         File outputFile = new File("test-output.lqnx");
         File intermediateInputFile = new File("intermediateInputFile.lqnx");
         File outputPs = new File("output.ps");
@@ -56,13 +43,10 @@ public class ModifiedEntcsExample {
         double responseTime = 350.0;
         App app = buildApp(appName,users, maxReplicas, responseTime);
 
-        buildCloud(app);
+        EntcsCloudBuilder.build(app);
 
-        LqnXmlDetails xmlDetails = SolverCommonParams.buildLqnXmlDetails(XML_NAME, XML_NS_URL, COMMENT, XML_DESCRIPTION,
-                                                                         SCHEMA_LOCATION);
-        SolverParams solverParams =
-                SolverCommonParams.buildSolverParams(COMMENT, CONVERGENCE, ITERATION_LIMIT, UNDER_RELAX_COEFF,
-                                                     PRINT_INTERVAL);
+        LqnXmlDetails xmlDetails = SolverCommonParams.buildLqnXmlDetails();
+        SolverParams solverParams = SolverCommonParams.buildSolverParams();
         LqnModel lqnModel = LqnModelFactory.build(app, xmlDetails, solverParams);
         new LqnModelWriter().write(lqnModel, inputFile.getAbsolutePath());
         LqnSolver.savePostScript(inputFile.getAbsolutePath(), "entcs.ps");
@@ -149,19 +133,5 @@ public class ModifiedEntcsExample {
                 call("call23", "DB", "Disk", "dbAdd2", "disk9", 1).build();
         return app;
     }
-
-    public static Cloud buildCloud(App app) {
-        Cloud cloud = CloudBuilder.builder().name("cloud1").containerTypes(Arrays.asList(ContainerType.SM)).
-                containerImage("Browser").service("Browser", app).buildContainerImage().
-                containerImage("AppServer").service("AppServer", app).buildContainerImage().
-                containerImage("DB").service("DB", app).buildContainerImage().
-                containerImage("Disk").service("Disk", app).buildContainerImage().build();
-        cloud.instantiateContainer("pClient", "Browser", ContainerType.SM);
-        cloud.instantiateContainer("pAppServer", "AppServer", ContainerType.SM);
-        cloud.instantiateContainer("DB", "DB", ContainerType.SM);
-        cloud.instantiateContainer("pDisk", "Disk", ContainerType.SM);
-        return cloud;
-    }
-
 }
 

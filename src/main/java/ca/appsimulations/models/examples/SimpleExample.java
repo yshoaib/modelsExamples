@@ -17,24 +17,15 @@ import ca.appsimulations.models.model.lqnmodel.LqnModelFactory;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
-import java.util.List;
 
 import static ca.appsimulations.models.examples.common.ResponseTime.getResponseTime;
+import static ca.appsimulations.models.examples.common.SolverCommonParams.buildLqnXmlDetails;
+import static ca.appsimulations.models.examples.common.SolverCommonParams.buildSolverParams;
 import static ca.appsimulations.models.model.cloud.ContainerType.*;
 import static java.util.Arrays.asList;
-import static java.util.stream.Collectors.toList;
 
 @Slf4j
 public class SimpleExample {
-    private static final double CONVERGENCE = 0.01;
-    private static final int ITERATION_LIMIT = 50_000;
-    private static final double UNDER_RELAX_COEFF = 0.9;
-    private static final int PRINT_INTERVAL = 1;
-    private static final String XML_NS_URL = "http://www.w3.org/2001/XMLSchema-instance";
-    private static final String SCHEMA_LOCATION = "lqn.xsd";
-    private static final String XML_NAME = "input-rep";
-    private static final String XML_DESCRIPTION = "description";
-    private static final String COMMENT = "comment";
 
     public static void main(String[] args) throws Exception {
 
@@ -145,26 +136,5 @@ public class SimpleExample {
         cloud.instantiateContainer("pTaskC", "TaskC", SM);
         cloud.instantiateContainer("pTaskD", "TaskD", SM);
         return cloud;
-    }
-
-    private static SolverParams buildSolverParams() {
-        return SolverParams
-                .builder()
-                .comment(COMMENT)
-                .convergence(CONVERGENCE)
-                .iterationLimit(ITERATION_LIMIT)
-                .underRelaxCoeff(UNDER_RELAX_COEFF)
-                .printInterval(PRINT_INTERVAL)
-                .build();
-    }
-
-    private static LqnXmlDetails buildLqnXmlDetails() {
-        return LqnXmlDetails
-                .builder()
-                .name(XML_NAME)
-                .xmlnsXsi(XML_NS_URL)
-                .description(XML_DESCRIPTION)
-                .schemaLocation(SCHEMA_LOCATION)
-                .build();
     }
 }

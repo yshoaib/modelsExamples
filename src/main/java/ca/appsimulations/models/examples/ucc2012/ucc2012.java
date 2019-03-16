@@ -1,7 +1,6 @@
-package ca.appsimulations.models.examples.bottleneck;
+package ca.appsimulations.models.examples.ucc2012;
 
-import ca.appsimulations.jlqninterface.lqn.entities.ActivityDefBase;
-import ca.appsimulations.jlqninterface.lqn.entities.ActivityPhases;
+
 import ca.appsimulations.jlqninterface.lqn.model.LqnModel;
 import ca.appsimulations.jlqninterface.lqn.model.LqnXmlDetails;
 import ca.appsimulations.jlqninterface.lqn.model.SolverParams;
@@ -16,29 +15,16 @@ import ca.appsimulations.models.model.lqnmodel.LqnModelFactory;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
-import java.util.List;
 
 import static ca.appsimulations.models.examples.common.ResponseTime.getResponseTime;
 import static ca.appsimulations.models.examples.common.SolverCommonParams.buildLqnXmlDetails;
 import static ca.appsimulations.models.examples.common.SolverCommonParams.buildSolverParams;
-import static ca.appsimulations.models.model.cloud.ContainerType.LA;
-import static ca.appsimulations.models.model.cloud.ContainerType.MD;
-import static ca.appsimulations.models.model.cloud.ContainerType.SM;
+import static ca.appsimulations.models.model.cloud.ContainerType.*;
 import static java.util.Arrays.asList;
-import static java.util.stream.Collectors.toList;
 
+// Model used in "Using Layered Bottlenecks for Virtual Machine Provisioning in the Clouds"
 @Slf4j
-public class LayeredBottlenecksExample {
-
-    private static final double CONVERGENCE = 0.01;
-    private static final int ITERATION_LIMIT = 50_000;
-    private static final double UNDER_RELAX_COEFF = 0.9;
-    private static final int PRINT_INTERVAL = 1;
-    private static final String XML_NS_URL = "http://www.w3.org/2001/XMLSchema-instance";
-    private static final String SCHEMA_LOCATION = "lqn.xsd";
-    private static final String XML_NAME = "input-rep";
-    private static final String XML_DESCRIPTION = "description";
-    private static final String COMMENT = "comment";
+public class ucc2012 {
 
     public static void main(String[] args) throws Exception {
 
@@ -52,48 +38,42 @@ public class LayeredBottlenecksExample {
         outputFile.delete();
         outputPs.delete();
 
-        int i =1;
-        int users = 1;
-        do{
-            App testApp = buildApp("testApp", users, 5, 50000.0);
-            Cloud testCloud = buildCloud(testApp);
+        int users = 100;
+        App testApp = buildApp("testApp", users, 5, 50000.0);
+        Cloud testCloud = buildCloud(testApp);
 
-            LqnModel lqnModel = LqnModelFactory.build(testApp, xmlDetails, solverParams);
-            new LqnModelWriter().write(lqnModel, inputFile.getAbsolutePath());
+        LqnModel lqnModel = LqnModelFactory.build(testApp, xmlDetails, solverParams);
+        new LqnModelWriter().write(lqnModel, inputFile.getAbsolutePath());
 
-            log.info("Users: " + lqnModel.entryByName("load_1").getTask().getMutiplicityString());
+        log.info("Users: " + lqnModel.entryByName("load_1").getTask().getMutiplicityString());
 
-            //write intermediate input
-            new LqnModelWriter().write(lqnModel, intermediateInputFile.getAbsolutePath());
+        //write intermediate input
+        new LqnModelWriter().write(lqnModel, intermediateInputFile.getAbsolutePath());
 
 
-            //solve
-            boolean solveResult =
-                    LqnSolver.solveLqns(intermediateInputFile.getAbsolutePath(),
-                                        new LqnResultParser(new LqnModel()),
-                                        outputFile.getAbsolutePath());
+        //solve
+        boolean solveResult =
+                LqnSolver.solveLqns(intermediateInputFile.getAbsolutePath(),
+                                    new LqnResultParser(new LqnModel()),
+                                    outputFile.getAbsolutePath());
 
-            //was the model solved successfully
-            if (solveResult == false) {
-                log.error("problem solving lqn model");
-                return;
-            }
+        //was the model solved successfully
+        if (solveResult == false) {
+            log.error("problem solving lqn model");
+            return;
+        }
 
-            //find response time
-            LqnModel lqnModelResult = new LqnModel();
-            new LqnResultParser(lqnModelResult).parseFile(outputFile.getAbsolutePath());
-            log.info("response time of load_1 is: " + getResponseTime(lqnModelResult, "load_1"));
+        //find response time
+        LqnModel lqnModelResult = new LqnModel();
+        new LqnResultParser(lqnModelResult).parseFile(outputFile.getAbsolutePath());
+        log.info("response time of load_1 is: " + getResponseTime(lqnModelResult, "load_1"));
 
-            LqnSolver.savePostScript(outputFile.getAbsolutePath(),
-                                     outputPs.getAbsolutePath());
+        LqnSolver.savePostScript(outputFile.getAbsolutePath(),
+                                 outputPs.getAbsolutePath());
 
-            users = i * 10; //users = 1, 10, 20, ..., 100
-            i++;
-
-        }while(i <= 11);
     }
 
-    public static App buildApp(String appName, int users, int maxReplicas, double responseTimeObjective){
+    private static App buildApp(String appName, int users, int maxReplicas, double responseTimeObjective) {
         App app = AppBuilder.builder()
                 .name(appName)
                 .maxReplicas(maxReplicas)
@@ -122,7 +102,7 @@ public class LayeredBottlenecksExample {
         return app;
     }
 
-    public static Cloud buildCloud(App app){
+    private static Cloud buildCloud(App app) {
         Cloud cloud = CloudBuilder.builder()
                 .name("cloud1")
                 .containerTypes(asList(SM, MD, LA))
@@ -144,15 +124,10 @@ public class LayeredBottlenecksExample {
                 .build();
 
         cloud.instantiateContainer("pClient", "Browser", SM);
-        cloud.instantiateContainer("TaskA", SM, 2);
-        cloud.instantiateContainer("TaskA", MD, 2);
-        cloud.instantiateContainer("TaskA", LA);
+        cloud.instantiateContainer("pTaskA", "TaskA", SM);
         cloud.instantiateContainer("pTaskB", "TaskB", SM);
-        cloud.instantiateContainer("pTaskB_1", "TaskB", MD);
         cloud.instantiateContainer("pTaskC", "TaskC", SM);
         cloud.instantiateContainer("pTaskD", "TaskD", SM);
         return cloud;
     }
-
-
 }
