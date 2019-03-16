@@ -83,7 +83,7 @@ public class SimpleExample {
             users = i * 10; //users = 1, 10, 20, ..., 100
             i++;
 
-        }while(i <= 10);
+        }while(i <= 11);
     }
 
     public static App buildApp(String appName, int users, int maxReplicas, double responseTimeObjective){
@@ -92,7 +92,7 @@ public class SimpleExample {
                 .maxReplicas(maxReplicas)
                 .responseTimeObjective(responseTimeObjective)
                 .service("Browser", users)
-                .serviceEntry("load", "load_1", 2.0)
+                .serviceEntry("load", "load_1", 2.0, 7.0)
                 .buildService()
                 .service("TaskA", 10)
                 .serviceEntry("funcA1", "funcA1_1", 3.0)
